@@ -5,7 +5,12 @@ var columnNumbers = {
   'decl_date': 7,
   'finished': 10,
   'blank': 15,
-  'nothingToDeclare': 16
+  'nothingToDeclare': 16,
+  'cCat1': 40,
+  'cCat2': 42,
+  'cCat3': 44,
+  'cCat4': 46,
+  'cCat5': 48
 };
 
 var roundToFixed2 = function(value) {
@@ -54,6 +59,52 @@ var countFinishedDocuments = function(documentsArray) {
     }
   }
   return documentCount;
+};
+
+var additionalSalary = function(documentsArray) {
+  var catCsum = [];
+  for (var i = startRow; i < documentsArray.length; i++) {
+    catCsum[documentsArray[i][columnNumbers['id']]] = 0;
+    if ((documentsArray[i][columnNumbers['finished']] === 1 ||
+            documentsArray[i][columnNumbers['finished']] === '1')) {
+      switch (parseInt(documentsArray[i][columnNumbers['cCat1']])) {
+        case 1: catCsum[documentsArray[i][columnNumbers['id']]] += 500; break;
+	case 2: catCsum[documentsArray[i][columnNumbers['id']]] += 1001; break;
+	case 3: catCsum[documentsArray[i][columnNumbers['id']]] += 5001; break;
+	case 4: catCsum[documentsArray[i][columnNumbers['id']]] += 10000; break;
+	default: break;
+      }
+      switch (parseInt(documentsArray[i][columnNumbers['cCat2']])) {
+        case 1: catCsum[documentsArray[i][columnNumbers['id']]] += 500; break;
+	case 2: catCsum[documentsArray[i][columnNumbers['id']]] += 1001; break;
+	case 3: catCsum[documentsArray[i][columnNumbers['id']]] += 5001; break;
+	case 4: catCsum[documentsArray[i][columnNumbers['id']]] += 10000; break;
+	default: break;
+      }
+      switch (parseInt(documentsArray[i][columnNumbers['cCat3']])) {
+        case 1: catCsum[documentsArray[i][columnNumbers['id']]] += 500; break;
+	case 2: catCsum[documentsArray[i][columnNumbers['id']]] += 1001; break;
+	case 3: catCsum[documentsArray[i][columnNumbers['id']]] += 5001; break;
+	case 4: catCsum[documentsArray[i][columnNumbers['id']]] += 10000; break;
+	default: break;
+      }
+      switch (parseInt(documentsArray[i][columnNumbers['cCat4']])) {
+        case 1: catCsum[documentsArray[i][columnNumbers['id']]] += 500; break;
+	case 2: catCsum[documentsArray[i][columnNumbers['id']]] += 1001; break;
+	case 3: catCsum[documentsArray[i][columnNumbers['id']]] += 5001; break;
+	case 4: catCsum[documentsArray[i][columnNumbers['id']]] += 10000; break;
+	default: break;
+      }
+      switch (parseInt(documentsArray[i][columnNumbers['cCat5']])) {
+        case 1: catCsum[documentsArray[i][columnNumbers['id']]] += 500; break;
+	case 2: catCsum[documentsArray[i][columnNumbers['id']]] += 1001; break;
+	case 3: catCsum[documentsArray[i][columnNumbers['id']]] += 5001; break;
+	case 4: catCsum[documentsArray[i][columnNumbers['id']]] += 10000; break;
+	default: break;
+      }
+    }
+  }
+  return catCsum;
 };
 
 var countBlankDocuments = function(documentsArray) {
@@ -203,9 +254,9 @@ $(function() {
       }
     });
 
-
-
-
+    $('#status').html('calculate MEP additional salary');
+    var additionalSalaryValue = additionalSalary(documentsArray);
+    $.plot("#additionalSalary", [convertObjectToPlotArray(additionalSalaryValue).sort()]);
 
     $('#status').html('done');
   });
