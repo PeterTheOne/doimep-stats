@@ -27,6 +27,25 @@ var convertObjectToPlotArray = function(mepsPerVersionNumbers) {
   return plotArray;
 };
 
+var convertKeysBySort = function(mepsPerVersionNumbers) {
+  var plotArray = [];
+  var i = 0;
+  for (var key in mepsPerVersionNumbers) {
+    if (mepsPerVersionNumbers.hasOwnProperty(key)) {
+      plotArray.push([key, mepsPerVersionNumbers[key]]);
+      i++;
+    }
+  }
+  plotArray.sort(function(a, b) {
+    return b[1] - a[1];
+  });
+  var plotArray2 = [];
+  for (var j = 0; j < plotArray.length; j++) {
+    plotArray2.push([j, plotArray[j][1]]);
+  }
+  return plotArray2;
+};
+
 var countDocuments = function(documentsArray) {
   var documentCount = 0;
   for (var i = startRow; i < documentsArray.length; i++) {
@@ -64,9 +83,9 @@ var countFinishedDocuments = function(documentsArray) {
 var additionalSalary = function(documentsArray) {
   var catCsum = [];
   for (var i = startRow; i < documentsArray.length; i++) {
-    catCsum[documentsArray[i][columnNumbers['id']]] = 0;
     if ((documentsArray[i][columnNumbers['finished']] === 1 ||
             documentsArray[i][columnNumbers['finished']] === '1')) {
+      catCsum[documentsArray[i][columnNumbers['id']]] = 0;
       switch (parseInt(documentsArray[i][columnNumbers['cCat1']])) {
         case 1: catCsum[documentsArray[i][columnNumbers['id']]] += 500; break;
 	case 2: catCsum[documentsArray[i][columnNumbers['id']]] += 1001; break;
@@ -256,7 +275,18 @@ $(function() {
 
     $('#status').html('calculate MEP additional salary');
     var additionalSalaryValue = additionalSalary(documentsArray);
-    $.plot("#additionalSalary", [convertObjectToPlotArray(additionalSalaryValue).sort()]);
+    $.plot("#additionalSalary", [convertKeysBySort(additionalSalaryValue)], {
+      series: {
+        lines: {
+          show: true,
+          fill: true,
+          steps: false
+        },
+        points: {
+          show: true
+        }
+      },
+    });
 
     $('#status').html('done');
   });
