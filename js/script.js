@@ -2,6 +2,7 @@ var spreadsheetUrl = 'https://docs.google.com/spreadsheet/pub?key=0Ar3KSfz0LI8kd
 var startRow = 3;
 var columnNumbers = {
   'id': 0,
+  'decl_date': 7,
   'finished': 10,
   'blank': 15,
   'nothingToDeclare': 16
@@ -9,7 +10,17 @@ var columnNumbers = {
 
 var roundToFixed2 = function(value) {
   return (Math.round(value * 100)/100).toFixed(2);
-}
+};
+
+var convertObjectToPlotArray = function(mepsPerVersionNumbers) {
+  var plotArray = [];
+  for (var key in mepsPerVersionNumbers) {
+    if (mepsPerVersionNumbers.hasOwnProperty(key)) {
+      plotArray.push([key, mepsPerVersionNumbers[key]])
+    }
+  }
+  return plotArray;
+};
 
 var countDocuments = function(documentsArray) {
   var documentCount = 0;
@@ -84,6 +95,48 @@ var countVersionsPerMep = function(documentsArray) {
   return versionsPerMep;
 };
 
+var calculateMepsPerVersionNumbers = function(versionsPerMep) {
+  var mepsPerVersionNumbers = {};
+  for (var key in versionsPerMep) {
+    if (mepsPerVersionNumbers.hasOwnProperty(versionsPerMep[key])) {
+      mepsPerVersionNumbers[versionsPerMep[key]]++;
+    } else {
+      mepsPerVersionNumbers[versionsPerMep[key]] = 1;
+    }
+  }
+  return mepsPerVersionNumbers;
+};
+
+var countDocumentsPerDay = function(documentsArray) {
+  var documentsPerMonth = {};
+  for (var i = startRow; i < documentsArray.length; i++) {
+    if (documentsArray[i][columnNumbers['id']] !== '') {
+      var decl_date = moment(documentsArray[i][columnNumbers['decl_date']], 'DD/MM/YYYY').valueOf();
+      if (documentsPerMonth.hasOwnProperty(decl_date)) {
+        documentsPerMonth[decl_date]++;
+      } else {
+        documentsPerMonth[decl_date] = 1;
+      }
+    }
+  }
+  return documentsPerMonth
+};
+
+var countDocumentsPerMonth = function(documentsArray) {
+  var documentsPerMonth = {};
+  for (var i = startRow; i < documentsArray.length; i++) {
+    if (documentsArray[i][columnNumbers['id']] !== '') {
+      var decl_date = moment(documentsArray[i][columnNumbers['decl_date']], 'DD/MM/YYYY').date(1).valueOf();
+      if (documentsPerMonth.hasOwnProperty(decl_date)) {
+        documentsPerMonth[decl_date]++;
+      } else {
+        documentsPerMonth[decl_date] = 1;
+      }
+    }
+  }
+  return documentsPerMonth
+};
+
 $(function() {
 
   $('#status').html('load csv');
@@ -115,10 +168,46 @@ $(function() {
     $('#nothingToDeclare').html(documentsNothingToDeclare + ' of ' + documentsFinished + ' (' + roundToFixed2(nothingToDeclarePercent) + '%)');
 
     $('#status').html('calculate average versions per mep');
-    var versionsPerMep = countVersionsPerMep(documentsArray);
     var averageVersionsPerMep = documentCount / mepCount;
     $('#averageVersionsPerMep').html(roundToFixed2(averageVersionsPerMep));
 
+    $('#status').html('calculate MEPs per versioncount graph');
+    var versionsPerMep = countVersionsPerMep(documentsArray);
+    var mepsPerVersionNumbers = calculateMepsPerVersionNumbers(versionsPerMep);
+    $.plot("#mepsPerVersioncount", [convertObjectToPlotArray(mepsPerVersionNumbers)]);
+
+    $('#status').html('calculate documents per month graph');
+    var documentsPerDay = countDocumentsPerDay(documentsArray);
+    var documentsPerMonth = countDocumentsPerMonth(documentsArray);
+    //alert(documentsPerMonth['24.09.2013']);
+    //alert(convertObjectToPlotArray(documentsPerMonth)[0][1]);
+    //$.plot("#documentsPerMonth", convertObjectToPlotArray(documentsPerMonth), {
+    $.plot("#documentsPerMonth", [convertObjectToPlotArray(documentsPerMonth).sort(), convertObjectToPlotArray(documentsPerDay).sort()], {
+      series: {
+        stack: true,
+        lines: {
+          show: true,
+          fill: true,
+          steps: false
+        },
+        points: {
+          show: true
+        }
+      },
+      xaxis: {
+        mode: "time",
+        timezone: "browser",
+        timeformat: "%d.%m.%Y",
+        min: moment('01.01.2011', 'DD.MM.YYYY').valueOf(),
+        max: moment().valueOf()
+      }
+    });
+
+
+
+
+
+    $('#status').html('done');
   });
 
 });
