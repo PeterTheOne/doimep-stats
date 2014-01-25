@@ -3,7 +3,8 @@ var startRow = 3;
 var columnNumbers = {
   'id': 0,
   'finished': 10,
-  'blank': 15
+  'blank': 15,
+  'nothingToDeclare': 16
 };
 
 var roundToFixed2 = function(value) {
@@ -57,6 +58,19 @@ var countBlankDocuments = function(documentsArray) {
   return documentCount;
 };
 
+var countNothingToDeclare = function(documentsArray) {
+  var documentCount = 0;
+  for (var i = startRow; i < documentsArray.length; i++) {
+    if ((documentsArray[i][columnNumbers['finished']] === 1 ||
+        documentsArray[i][columnNumbers['finished']] === '1') &&
+        (documentsArray[i][columnNumbers['nothingToDeclare']] === 1 ||
+            documentsArray[i][columnNumbers['nothingToDeclare']] === '1')) {
+      documentCount++;
+    }
+  }
+  return documentCount;
+};
+
 var countVersionsPerMep = function(documentsArray) {
   var versionsPerMep = {};
   for (var i = startRow; i < documentsArray.length; i++) {
@@ -94,6 +108,11 @@ $(function() {
     var documentsBlank = countBlankDocuments(documentsArray);
     var blankPercent = (documentsBlank / documentsFinished) * 100;
     $('#blank').html(documentsBlank + ' of ' + documentsFinished + ' (' + roundToFixed2(blankPercent) + '%)');
+
+    $('#status').html('count nothingToDeclare');
+    var documentsNothingToDeclare = countNothingToDeclare(documentsArray);
+    var nothingToDeclarePercent = (documentsNothingToDeclare / documentsFinished) * 100;
+    $('#nothingToDeclare').html(documentsNothingToDeclare + ' of ' + documentsFinished + ' (' + roundToFixed2(nothingToDeclarePercent) + '%)');
 
     $('#status').html('calculate average versions per mep');
     var versionsPerMep = countVersionsPerMep(documentsArray);
