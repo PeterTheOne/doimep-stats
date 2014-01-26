@@ -2,6 +2,10 @@ var spreadsheetUrl = 'https://docs.google.com/spreadsheet/pub?key=0Ar3KSfz0LI8kd
 var startRow = 3;
 var columnNumbers = {
   'id': 0,
+  'firstname': 1,
+  'surname': 2,
+  'gender': 3,
+  'dateOfBirth': 4,
   'country': 5,
   'group': 6,
   'decl_date': 7,
@@ -257,6 +261,76 @@ var calculateCompletionByCountry = function(documentsArray) {
   return completionByCountry;
 };
 
+var calculateMepsWithMoreThanOneVersion = function(documentsArray) {
+  var mepsWithMoreThanOneVersion = {};
+  for (var i = startRow; i < documentsArray.length; i++) {
+    if (documentsArray[i][columnNumbers['finished']] === 1 ||
+        documentsArray[i][columnNumbers['finished']] === '1') {
+      var id = documentsArray[i][columnNumbers['id']];
+      if (mepsWithMoreThanOneVersion.hasOwnProperty(id)) {
+        mepsWithMoreThanOneVersion[id].version++;
+      } else {
+        mepsWithMoreThanOneVersion[id]= {
+          'version': 1,
+          'firstname': documentsArray[i][columnNumbers['firstname']],
+          'surname': documentsArray[i][columnNumbers['surname']],
+          'gender': documentsArray[i][columnNumbers['gender']],
+          'dateOfBirth': documentsArray[i][columnNumbers['dateOfBirth']],
+          'country': documentsArray[i][columnNumbers['country']],
+          'group': documentsArray[i][columnNumbers['group']]
+        };
+      }
+    }
+  }
+  return mepsWithMoreThanOneVersion;
+};
+
+var calculateMepsWithBlankDocuments = function(documentsArray) {
+  var mepsWithBlankDocuments = {};
+  for (var i = startRow; i < documentsArray.length; i++) {
+    if ((documentsArray[i][columnNumbers['finished']] === 1 ||
+        documentsArray[i][columnNumbers['finished']] === '1') &&
+        (documentsArray[i][columnNumbers['blank']] === 1 ||
+        documentsArray[i][columnNumbers['blank']] === '1')) {
+      var id = documentsArray[i][columnNumbers['id']];
+      if (!mepsWithBlankDocuments.hasOwnProperty(id)) {
+        mepsWithBlankDocuments[id]= {
+          'firstname': documentsArray[i][columnNumbers['firstname']],
+          'surname': documentsArray[i][columnNumbers['surname']],
+          'gender': documentsArray[i][columnNumbers['gender']],
+          'dateOfBirth': documentsArray[i][columnNumbers['dateOfBirth']],
+          'country': documentsArray[i][columnNumbers['country']],
+          'group': documentsArray[i][columnNumbers['group']]
+        };
+      }
+    }
+  }
+  return mepsWithBlankDocuments;
+};
+
+var calculateMepsWithNothingToDeclare = function(documentsArray) {
+  var mepsWithNothingToDeclare = {};
+  for (var i = startRow; i < documentsArray.length; i++) {
+    if ((documentsArray[i][columnNumbers['finished']] === 1 ||
+        documentsArray[i][columnNumbers['finished']] === '1') &&
+        (documentsArray[i][columnNumbers['nothingToDeclare']] === 1 ||
+            documentsArray[i][columnNumbers['nothingToDeclare']] === '1')) {
+      var id = documentsArray[i][columnNumbers['id']];
+      if (!mepsWithNothingToDeclare.hasOwnProperty(id)) {
+        mepsWithNothingToDeclare[id]= {
+          'firstname': documentsArray[i][columnNumbers['firstname']],
+          'surname': documentsArray[i][columnNumbers['surname']],
+          'gender': documentsArray[i][columnNumbers['gender']],
+          'dateOfBirth': documentsArray[i][columnNumbers['dateOfBirth']],
+          'country': documentsArray[i][columnNumbers['country']],
+          'group': documentsArray[i][columnNumbers['group']]
+        };
+      }
+    }
+  }
+  return mepsWithNothingToDeclare;
+};
+
 $(function() {
 
   $('#status').html('load csv');
@@ -310,6 +384,58 @@ $(function() {
             '</td><td>' + completionByCountry[country].complete +
             '</td><td>' + completionByCountry[country].total + '</td><td>' +
             roundToFixed2(completionByCountry[country].percent) + '%</td></tr>');
+      }
+    }
+
+    $('#status').html('calculate MEPs with more than one version');
+    var mepsWithMoreThanOneVersion = calculateMepsWithMoreThanOneVersion(documentsArray);
+    for (var id in mepsWithMoreThanOneVersion) {
+      if (mepsWithMoreThanOneVersion.hasOwnProperty(id)) {
+        if (mepsWithMoreThanOneVersion[id].version < 2) {
+          continue;
+        }
+        $('#mepsWithMoreThanOneVersion tbody').append('<tr><td>' + id +
+            '</td><td>' + mepsWithMoreThanOneVersion[id].firstname +
+            '</td><td>' + mepsWithMoreThanOneVersion[id].surname +
+            '</td><td>' + mepsWithMoreThanOneVersion[id].gender +
+            '</td><td>' + mepsWithMoreThanOneVersion[id].dateOfBirth +
+            '</td><td>' + mepsWithMoreThanOneVersion[id].country +
+            '</td><td>' + mepsWithMoreThanOneVersion[id].group +
+            '</td><td>' + mepsWithMoreThanOneVersion[id].version + '</td></tr>');
+      }
+    }
+
+    $('#status').html('calculate MEPs with blank documents');
+    var mepsWithBlankDocuments = calculateMepsWithBlankDocuments(documentsArray);
+    for (var id in mepsWithBlankDocuments) {
+      if (mepsWithBlankDocuments.hasOwnProperty(id)) {
+        if (mepsWithBlankDocuments[id].version < 2) {
+          continue;
+        }
+        $('#mepsWithBlankDocuments tbody').append('<tr><td>' + id +
+            '</td><td>' + mepsWithBlankDocuments[id].firstname +
+            '</td><td>' + mepsWithBlankDocuments[id].surname +
+            '</td><td>' + mepsWithBlankDocuments[id].gender +
+            '</td><td>' + mepsWithBlankDocuments[id].dateOfBirth +
+            '</td><td>' + mepsWithBlankDocuments[id].country +
+            '</td><td>' + mepsWithBlankDocuments[id].group + '</td></tr>');
+      }
+    }
+
+    $('#status').html('calculate MEPs with nothing to declare');
+    var mepsWithNothingToDeclare = calculateMepsWithNothingToDeclare(documentsArray);
+    for (var id in mepsWithNothingToDeclare) {
+      if (mepsWithNothingToDeclare.hasOwnProperty(id)) {
+        if (mepsWithNothingToDeclare[id].version < 2) {
+          continue;
+        }
+        $('#mepsWithNothingToDeclare tbody').append('<tr><td>' + id +
+            '</td><td>' + mepsWithNothingToDeclare[id].firstname +
+            '</td><td>' + mepsWithNothingToDeclare[id].surname +
+            '</td><td>' + mepsWithNothingToDeclare[id].gender +
+            '</td><td>' + mepsWithNothingToDeclare[id].dateOfBirth +
+            '</td><td>' + mepsWithNothingToDeclare[id].country +
+            '</td><td>' + mepsWithNothingToDeclare[id].group + '</td></tr>');
       }
     }
 
