@@ -9,6 +9,7 @@ var columnNumbers = {
   'country': 5,
   'group': 6,
   'decl_date': 7,
+  'decl_url': 9,
   'finished': 10,
   'blank': 15,
   'nothingToDeclare': 16,
@@ -277,7 +278,8 @@ var calculateMepsWithMoreThanOneVersion = function(documentsArray) {
           'gender': documentsArray[i][columnNumbers['gender']],
           'dateOfBirth': documentsArray[i][columnNumbers['dateOfBirth']],
           'country': documentsArray[i][columnNumbers['country']],
-          'group': documentsArray[i][columnNumbers['group']]
+          'group': documentsArray[i][columnNumbers['group']],
+          'decl_url': documentsArray[i][columnNumbers['decl_url']]
         };
       }
     }
@@ -300,7 +302,8 @@ var calculateMepsWithBlankDocuments = function(documentsArray) {
           'gender': documentsArray[i][columnNumbers['gender']],
           'dateOfBirth': documentsArray[i][columnNumbers['dateOfBirth']],
           'country': documentsArray[i][columnNumbers['country']],
-          'group': documentsArray[i][columnNumbers['group']]
+          'group': documentsArray[i][columnNumbers['group']],
+          'decl_url': documentsArray[i][columnNumbers['decl_url']]
         };
       }
     }
@@ -323,7 +326,8 @@ var calculateMepsWithNothingToDeclare = function(documentsArray) {
           'gender': documentsArray[i][columnNumbers['gender']],
           'dateOfBirth': documentsArray[i][columnNumbers['dateOfBirth']],
           'country': documentsArray[i][columnNumbers['country']],
-          'group': documentsArray[i][columnNumbers['group']]
+          'group': documentsArray[i][columnNumbers['group']],
+          'decl_url': documentsArray[i][columnNumbers['decl_url']]
         };
       }
     }
@@ -394,7 +398,8 @@ $(function() {
         if (mepsWithMoreThanOneVersion[id].version < 2) {
           continue;
         }
-        $('#mepsWithMoreThanOneVersion tbody').append('<tr><td>' + id +
+        $('#mepsWithMoreThanOneVersion tbody').append(
+            '<tr><td><a href="' + mepsWithMoreThanOneVersion[id].decl_url + '">' + id + '</a>' +
             '</td><td>' + mepsWithMoreThanOneVersion[id].firstname +
             '</td><td>' + mepsWithMoreThanOneVersion[id].surname +
             '</td><td>' + mepsWithMoreThanOneVersion[id].gender +
@@ -412,7 +417,8 @@ $(function() {
         if (mepsWithBlankDocuments[id].version < 2) {
           continue;
         }
-        $('#mepsWithBlankDocuments tbody').append('<tr><td>' + id +
+        $('#mepsWithBlankDocuments tbody').append(
+            '<tr><td><a href="' + mepsWithMoreThanOneVersion[id].decl_url + '">' + id + '</a>' +
             '</td><td>' + mepsWithBlankDocuments[id].firstname +
             '</td><td>' + mepsWithBlankDocuments[id].surname +
             '</td><td>' + mepsWithBlankDocuments[id].gender +
@@ -429,7 +435,8 @@ $(function() {
         if (mepsWithNothingToDeclare[id].version < 2) {
           continue;
         }
-        $('#mepsWithNothingToDeclare tbody').append('<tr><td>' + id +
+        $('#mepsWithNothingToDeclare tbody').append(
+            '<tr><td><a href="' + mepsWithMoreThanOneVersion[id].decl_url + '">' + id + '</a>' +
             '</td><td>' + mepsWithNothingToDeclare[id].firstname +
             '</td><td>' + mepsWithNothingToDeclare[id].surname +
             '</td><td>' + mepsWithNothingToDeclare[id].gender +
@@ -439,24 +446,48 @@ $(function() {
       }
     }
 
+    $("<div id='tooltip'></div>").css({
+      position: "absolute",
+      display: "none",
+      border: "1px solid #fdd",
+      padding: "2px",
+      "background-color": "#fee",
+      opacity: 0.80
+    }).appendTo("body");
+
     $('#status').html('calculate MEPs per versioncount graph');
     var versionsPerMep = countVersionsPerMep(documentsArray);
     var mepsPerVersionNumbers = calculateMepsPerVersionNumbers(versionsPerMep);
     $.plot("#mepsPerVersioncount", [convertObjectToPlotArray(mepsPerVersionNumbers)], {
       xaxis: {
-        minTickSize: 1
+        minTickSize: 1,
+        min: 0,
+        max: 4
+      },
+      grid: {
+        hoverable: true,
+        clickable: true
+      }
+    });
+
+    $("#mepsPerVersioncount").bind("plothover", function (event, pos, item) {
+      if (item) {
+        var x = item.datapoint[0].toFixed(2),
+            y = item.datapoint[1].toFixed(2);
+
+        $("#tooltip").html(y)
+            .css({top: item.pageY+5, left: item.pageX+5})
+            .fadeIn(200);
+      } else {
+        $("#tooltip").hide();
       }
     });
 
     $('#status').html('calculate documents per month graph');
     var documentsPerDay = countDocumentsPerDay(documentsArray);
     var documentsPerMonth = countDocumentsPerMonth(documentsArray);
-    //alert(documentsPerMonth['24.09.2013']);
-    //alert(convertObjectToPlotArray(documentsPerMonth)[0][1]);
-    //$.plot("#documentsPerMonth", convertObjectToPlotArray(documentsPerMonth), {
     $.plot("#documentsPerMonth", [convertObjectToPlotArray(documentsPerMonth).sort(), convertObjectToPlotArray(documentsPerDay).sort()], {
       series: {
-        stack: true,
         lines: {
           show: true,
           fill: true,
@@ -466,12 +497,29 @@ $(function() {
           show: true
         }
       },
+      grid: {
+        hoverable: true,
+        clickable: true
+      },
       xaxis: {
         mode: "time",
         timezone: "browser",
         timeformat: "%d.%m.%Y",
-        min: moment('01.01.2011', 'DD.MM.YYYY').valueOf(),
+        min: moment('01.10.2011', 'DD.MM.YYYY').valueOf(),
         max: moment().valueOf()
+      }
+    });
+
+    $("#documentsPerMonth").bind("plothover", function (event, pos, item) {
+      if (item) {
+        var x = item.datapoint[0].toFixed(2),
+            y = item.datapoint[1].toFixed(2);
+
+        $("#tooltip").html(y)
+            .css({top: item.pageY+5, left: item.pageX+5})
+            .fadeIn(200);
+      } else {
+        $("#tooltip").hide();
       }
     });
 
@@ -488,6 +536,23 @@ $(function() {
           show: true
         }
       },
+      grid: {
+        hoverable: true,
+        clickable: true
+      },
+    });
+
+    $("#additionalSalary").bind("plothover", function (event, pos, item) {
+      if (item) {
+        var x = item.datapoint[0].toFixed(2),
+            y = item.datapoint[1].toFixed(2);
+
+        $("#tooltip").html(y + ' Euro')
+            .css({top: item.pageY+5, left: item.pageX+5})
+            .fadeIn(200);
+      } else {
+        $("#tooltip").hide();
+      }
     });
 
     $('#status').html('done');
