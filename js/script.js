@@ -2,6 +2,8 @@ var spreadsheetUrl = 'https://docs.google.com/spreadsheet/pub?key=0Ar3KSfz0LI8kd
 var startRow = 3;
 var columnNumbers = {
   'id': 0,
+  'country': 5,
+  'group': 6,
   'decl_date': 7,
   'finished': 10,
   'blank': 15,
@@ -207,6 +209,54 @@ var countDocumentsPerMonth = function(documentsArray) {
   return documentsPerMonth
 };
 
+var calculateCompletionByGroup = function(documentsArray) {
+  var completionByGroup = {};
+  for (var i = startRow; i < documentsArray.length; i++) {
+    var group = documentsArray[i][columnNumbers['group']];
+    if (!completionByGroup.hasOwnProperty(group)) {
+      completionByGroup[group] = {
+        'complete': 0,
+        'total': 0,
+        'percent': 0
+      };
+    }
+    if (documentsArray[i][columnNumbers['finished']]) {
+      completionByGroup[group].complete++;
+    }
+    completionByGroup[group].total++;
+  }
+  for (var group in completionByGroup) {
+    if (completionByGroup.hasOwnProperty(group)) {
+      completionByGroup[group].percent = (completionByGroup[group].complete / completionByGroup[group].total) * 100;
+    }
+  }
+  return completionByGroup;
+};
+
+var calculateCompletionByCountry = function(documentsArray) {
+  var completionByCountry = {};
+  for (var i = startRow; i < documentsArray.length; i++) {
+    var country = documentsArray[i][columnNumbers['country']];
+    if (!completionByCountry.hasOwnProperty(country)) {
+      completionByCountry[country] = {
+        'complete': 0,
+        'total': 0,
+        'percent': 0
+      };
+    }
+    if (documentsArray[i][columnNumbers['finished']]) {
+      completionByCountry[country].complete++;
+    }
+    completionByCountry[country].total++;
+  }
+  for (var country in completionByCountry) {
+    if (completionByCountry.hasOwnProperty(country)) {
+      completionByCountry[country].percent = (completionByCountry[country].complete / completionByCountry[country].total) * 100;
+    }
+  }
+  return completionByCountry;
+};
+
 $(function() {
 
   $('#status').html('load csv');
@@ -240,6 +290,28 @@ $(function() {
     $('#status').html('calculate average versions per mep');
     var averageVersionsPerMep = documentCount / mepCount;
     $('#averageVersionsPerMep').html(roundToFixed2(averageVersionsPerMep));
+
+    $('#status').html('calculate completion by group table');
+    var completionByGroup = calculateCompletionByGroup(documentsArray);
+    for (var group in completionByGroup) {
+      if (completionByGroup.hasOwnProperty(group)) {
+        $('#completionByGroup tbody').append('<tr><td>' + group +
+            '</td><td>' + completionByGroup[group].complete +
+            '</td><td>' + completionByGroup[group].total + '</td><td>' +
+            roundToFixed2(completionByGroup[group].percent) + '%</td></tr>');
+      }
+    }
+
+    $('#status').html('calculate completion by country table');
+    var completionByCountry = calculateCompletionByCountry(documentsArray);
+    for (var country in completionByCountry) {
+      if (completionByCountry.hasOwnProperty(country)) {
+        $('#completionByCountry tbody').append('<tr><td>' + country +
+            '</td><td>' + completionByCountry[country].complete +
+            '</td><td>' + completionByCountry[country].total + '</td><td>' +
+            roundToFixed2(completionByCountry[country].percent) + '%</td></tr>');
+      }
+    }
 
     $('#status').html('calculate MEPs per versioncount graph');
     var versionsPerMep = countVersionsPerMep(documentsArray);
