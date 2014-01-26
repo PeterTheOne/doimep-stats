@@ -442,7 +442,11 @@ $(function() {
     $('#status').html('calculate MEPs per versioncount graph');
     var versionsPerMep = countVersionsPerMep(documentsArray);
     var mepsPerVersionNumbers = calculateMepsPerVersionNumbers(versionsPerMep);
-    $.plot("#mepsPerVersioncount", [convertObjectToPlotArray(mepsPerVersionNumbers)]);
+    $.plot("#mepsPerVersioncount", [convertObjectToPlotArray(mepsPerVersionNumbers)], {
+      xaxis: {
+        minTickSize: 1
+      }
+    });
 
     $('#status').html('calculate documents per month graph');
     var documentsPerDay = countDocumentsPerDay(documentsArray);
